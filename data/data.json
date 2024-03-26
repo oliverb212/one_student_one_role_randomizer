@@ -1,0 +1,25 @@
+{
+    "student": [
+        {
+            "백지원": {
+                "role":"temp",
+                "comment": "이 자, 씹덕 유효하다.",
+                "rate": 4
+            },
+            "아무개": {
+                "role":"temp",
+                "comment": "대충 무언가",
+                "rate": 5
+            }
+        }
+    ],
+    
+    "role":[
+        {
+            "temp":"text"
+        },
+        {
+            "temp2":"text"
+        }
+    ]
+}
