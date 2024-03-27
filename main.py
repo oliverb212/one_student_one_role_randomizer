@@ -8,7 +8,7 @@ import json
 stu_list:dict
 role_list:dict
 
-width,height = 1920,1080
+width,height = 1600,900
 
 
 #TODO: CVS 파일 임포트, UI 개발
@@ -52,32 +52,35 @@ class gui(QWidget):
         self.grid = QGridLayout(self)
 
         self.tableGroup = QGroupBox("학생 리스트",self)
+        self.tableGroup.setMinimumSize(QSize(width/2,height/2.5))
+
+        self.setting_box = QGroupBox(self)
+        
         self.box_2 = QGroupBox("box",self)
-        self.box_3 = QGroupBox("box",self)
+        
         self.comment_box = QGroupBox(self)
+        self.comment_box.setMinimumSize(QSize(width/3,height/3))
 
         self.tab_init()
-
-        #코멘트 작성 라인###########
-        self.comment_layer = QVBoxLayout(self)
-        self.comment_line = QTextEdit(self)
-        self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
-
-        self.comment_box.setLayout(self.comment_layer)
-        self.comment_layer.addWidget(self.comment_line)
-        ##########################
+        self.comment_init()
+        
        
         #그리드에 그룹박스 위젯 추가    
         self.grid.addWidget(self.tableGroup,0,0,Qt.AlignmentFlag.AlignLeft)
         self.grid.addWidget(self.box_2,0,1,Qt.AlignmentFlag.AlignLeft)
-        self.grid.addWidget(self.box_3,1,0,Qt.AlignmentFlag.AlignLeft)
+        self.grid.addWidget(self.setting_box,1,0,Qt.AlignmentFlag.AlignLeft)
         self.grid.addWidget(self.comment_box,1,1,Qt.AlignmentFlag.AlignLeft)
     
+    def setting_init(self):
+        self.setting_layout = QLayout(self)
+        self.button_1 = QPushButton('test',self)
+        
+        self.setting_layout.addItem(self.button_1)
+        self.comment_box.setLayout(self.setting_layout)
+
     def tab_init(self):
-         #######학생 리스트 구성#############
         self.tableLayout = QVBoxLayout(self)
         self.table = QTableWidget(len(stu_list),3,self)
-        #self.table.setFixedSize(width,height)
 
         for i in range(len(stu_list)):
             self.table.setItem(i,0,QTableWidgetItem(self.student[i]))
@@ -87,7 +90,14 @@ class gui(QWidget):
         
         self.tableGroup.setLayout(self.tableLayout)
         self.tableLayout.addWidget(self.table)
-        ###################################
+
+    def comment_init(self):
+        self.comment_layer = QVBoxLayout(self)
+        self.comment_line = QTextEdit(self)
+        self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
+
+        self.comment_box.setLayout(self.comment_layer)
+        self.comment_layer.addWidget(self.comment_line)
        
 
 
