@@ -47,6 +47,8 @@ class gui(QWidget):
     def __init__(self):
         super().__init__()
         global stu_list
+        global width
+        global height
         self.student = list(stu_list.keys())
 
         self.grid = QGridLayout(self)
@@ -54,14 +56,14 @@ class gui(QWidget):
         self.tableGroup = QGroupBox("학생 리스트",self)
         self.tableGroup.setMinimumSize(QSize(width/2,height/2.5))
 
-        self.setting_box = QGroupBox(self)
-        
+        self.setting_box = QGroupBox("설정",self)
         self.box_2 = QGroupBox("box",self)
-        
         self.comment_box = QGroupBox(self)
-        self.comment_box.setMinimumSize(QSize(width/3,height/3))
 
-        self.tab_init()
+        self.comment_box.setMinimumSize(QSize(width/2,height/1.5))
+        self.box_2.setMinimumSize(width-self.comment_box.size().width(),height-self.comment_box.size().height())
+        
+        self.table_init()
         self.comment_init()
         
        
@@ -75,10 +77,10 @@ class gui(QWidget):
         self.setting_layout = QLayout(self)
         self.button_1 = QPushButton('test',self)
         
-        self.setting_layout.addItem(self.button_1)
         self.comment_box.setLayout(self.setting_layout)
+        self.setting_layout.addItem(self.button_1)
 
-    def tab_init(self):
+    def table_init(self):
         self.tableLayout = QVBoxLayout(self)
         self.table = QTableWidget(len(stu_list),3,self)
 
@@ -91,7 +93,7 @@ class gui(QWidget):
         self.tableGroup.setLayout(self.tableLayout)
         self.tableLayout.addWidget(self.table)
 
-    def comment_init(self):
+    def comment_init(self): #TODO: 글자수, 바이트수 표시
         self.comment_layer = QVBoxLayout(self)
         self.comment_line = QTextEdit(self)
         self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
@@ -111,7 +113,7 @@ class main():
         app = QApplication([])
         app.setApplicationDisplayName("main")
         widget = gui()
-        widget.resize(width,height)
+        widget.resize(width,height)        
         widget.show()
         
         sys.exit(app.exec())
