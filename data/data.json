@@ -7,7 +7,7 @@
                 "rate": 4
             },
             "아무개": {
-                "role":"temp",
+                "role":"temp2",
                 "comment": "대충 무언가",
                 "rate": 5
             }
@@ -16,10 +16,8 @@
     
     "role":[
         {
-            "temp":"text"
-        },
-        {
-            "temp2":"text"
+            "temp":"text",
+            "temp2":"text2"
         }
     ]
 }
