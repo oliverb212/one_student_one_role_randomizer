@@ -53,6 +53,8 @@ class stu_directory():
 class gui(QWidget):
     stu_num = 0
     student = []
+    comment_byte=0
+    comment_length=0
     
     def __init__(self):
         super().__init__()
@@ -109,27 +111,34 @@ class gui(QWidget):
         self.comment_layer = QVBoxLayout(self)
         self.comment_line = QTextEdit()
         self.comment_line.setPlainText(stu_list[self.student[self.stu_num]]['comment'])
-
         self.comment_box.setLayout(self.comment_layer)
         self.comment_layer.addWidget(self.comment_line)
     
     def detail_init(self):#TODO: 폴 레이아웃 고치기!
         self.detail_layout = QFormLayout(self)
-        self.detail_layout.addRow("이름")
+
+        self.detail_name = QPushButton(self)
+        menu = QMenu(self)
+        for i in range(len(self.student)):
+            menu.addMenu(self.student[i])
+        self.detail_name.setMenu(menu)
+        self.d_button_menu = self.detail_name.menu()
+
+        self.detail_role = QLabel(self)
+        self.detail_role.setText(stu_list[self.student[self.stu_num]]['role'])
         
-        self.name_text = QLabel("이름",self)
-        self.role_text = QLabel("역할",self)
+        self.detail_role_explain = QLabel(self)
+        self.detail_role_explain.setText(role_list[stu_list[self.student[self.stu_num]]['role']])
 
-        self.detail_name = QTextEdit(self)
-        self.detail_name.setText(self.student[self.stu_num])
-        self.detail_role_exp = QTextEdit(self)
-        self.detail_role_exp.setText(stu_list[self.student[self.stu_num]]['role'])
+        self.length_text = QLabel(text=str(self.comment_length))
+        self.byte_text = QLabel(text=str(self.comment_byte))
 
-        self.detail_layout.addWidget(self.detail_name,0,0)
-        self.detail_layout.addWidget(self.detail_name,1,0)
-
-        self.detail_layout.addWidget(self.detail_name,0,1)
-        self.detail_layout.addWidget(self.detail_role_exp,1,1)
+        self.detail_layout.addRow("이름:",self.detail_name)
+        self.detail_layout.addRow("역할:",self.detail_role)
+        self.detail_layout.addRow("역할 설명:",self.detail_role_explain)
+        self.detail_layout.addRow("글자수:",self.length_text)
+        self.detail_layout.addRow("바이트 수:",self.byte_text)
+       
         self.detail_box.setLayout(self.detail_layout)
        
 
