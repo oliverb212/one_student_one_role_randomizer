@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import *
 from PySide6.QtCore import *
+from PySide6.QtGui import *
 from os import path,mkdir
 
 import sys
@@ -86,7 +87,13 @@ class gui(QWidget):
         self.comment_init()
         self.detail_init()
         self.setting_init()
-    
+
+    @Slot()
+    def stu_select_event(self):
+        action:QAction = self.sender()
+        self.stu_num = action.data()
+        self.refrash()
+
     def setting_init(self):
         self.setting_layout = QHBoxLayout(self)
         self.setting_button = QPushButton('test',self)
@@ -107,28 +114,42 @@ class gui(QWidget):
         self.tableGroup.setLayout(self.table_layout)
         self.table_layout.addWidget(self.table)
 
-    def comment_init(self): #TODO: 글자수, 바이트수 표시
+    def comment_init(self):
         self.comment_layer = QVBoxLayout(self)
         self.comment_line = QTextEdit()
-        self.comment_line.setPlainText(stu_list[self.student[self.stu_num]]['comment'])
+        self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
         self.comment_box.setLayout(self.comment_layer)
         self.comment_layer.addWidget(self.comment_line)
     
-    def detail_init(self):#TODO: 폴 레이아웃 고치기!
+    def detail_init(self):
         self.detail_layout = QFormLayout(self)
-
+        
+        #name line
         self.detail_name = QPushButton(self)
+        self.detail_name.setMaximumWidth(90)
+        
         menu = QMenu(self)
         for i in range(len(self.student)):
-            menu.addMenu(self.student[i])
-        self.detail_name.setMenu(menu)
-        self.d_button_menu = self.detail_name.menu()
+            act = QAction(self.student[i],self)
+            act.setData(i)
+            act.triggered.connect(self.stu_select_event)
+            menu.addAction(act)
 
+        self.detail_name.setMenu(menu)
+        self.detail_name.setText(self.student[self.stu_num])
+        
+        d_button_menu = self.detail_name.menu()
+        button_list = d_button_menu.actions()
+        
+        #nameline
+
+        #role line
         self.detail_role = QLabel(self)
         self.detail_role.setText(stu_list[self.student[self.stu_num]]['role'])
         
         self.detail_role_explain = QLabel(self)
         self.detail_role_explain.setText(role_list[stu_list[self.student[self.stu_num]]['role']])
+        #roleline
 
         self.length_text = QLabel(text=str(self.comment_length))
         self.byte_text = QLabel(text=str(self.comment_byte))
