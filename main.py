@@ -12,7 +12,7 @@ role_list:dict #자료구조: {역할, 역할,...}
 width,height = 1600,900
 
 
-#TODO: CVS 파일 임포트, UI 개발, 역할 수정, 추가 칸
+#TODO: CVS 파일 임포트, UI 개발, 역할 수정, 추가 칸, 수정후 파일에 저장.
 
 class check_load_file():
     def __init__(self) -> None:
@@ -62,10 +62,11 @@ class gui(QWidget):
         global stu_list
         global width
         global height
+        
         self.student = list(stu_list.keys())
 
-        self.grid = QGridLayout(self)
-        self.setLayout(self.grid)
+        grid = QGridLayout(self)
+        self.setLayout(grid)
 
         self.tableGroup = QGroupBox("학생 리스트",self)
         self.tableGroup.setMinimumSize(QSize(width/2,height/2.5))
@@ -78,57 +79,68 @@ class gui(QWidget):
         self.detail_box.setMinimumSize(width-self.comment_box.size().width(),height-self.comment_box.size().height())
         
         #그리드에 그룹박스 위젯 추가    
-        self.grid.addWidget(self.tableGroup,0,0,Qt.AlignmentFlag.AlignLeft)
-        self.grid.addWidget(self.detail_box,0,1,Qt.AlignmentFlag.AlignLeft)
-        self.grid.addWidget(self.setting_box,1,0,Qt.AlignmentFlag.AlignLeft)
-        self.grid.addWidget(self.comment_box,1,1,Qt.AlignmentFlag.AlignLeft)
+        grid.addWidget(self.tableGroup,0,0,Qt.AlignmentFlag.AlignLeft)
+        grid.addWidget(self.detail_box,0,1,Qt.AlignmentFlag.AlignLeft)
+        grid.addWidget(self.setting_box,1,0,Qt.AlignmentFlag.AlignLeft)
+        grid.addWidget(self.comment_box,1,1,Qt.AlignmentFlag.AlignLeft)
         
         self.table_init()
         self.comment_init()
         self.detail_init()
         self.setting_init()
+        self.update_text()
 
-    @Slot()
+    #@Slot()
     def stu_select_event(self):
         action:QAction = self.sender()
         self.stu_num = action.data()
-        self.refrash()
+        #이닛을 부른다 해도 택스트 업데이트 X
+        self.update_text()
 
-    def setting_init(self):
-        self.setting_layout = QHBoxLayout(self)
-        self.setting_button = QPushButton('test',self)
-
-        self.setting_box.setLayout(self.setting_layout)
-        self.setting_layout.addWidget(self.setting_button)
-
-    def table_init(self):
-        self.table_layout = QVBoxLayout(self)
-        self.table = QTableWidget(len(stu_list),3,self)
-
+    def update_text(self):
         for i in range(len(stu_list)):
             self.table.setItem(i,0,QTableWidgetItem(stu_list[self.student[i]]['role']))
             self.table.setItem(i,1,QTableWidgetItem(self.student[i]))
             self.table.setItem(i,2,QTableWidgetItem(stu_list[self.student[i]]['comment']))
             self.table.setItem(i,3,QTableWidgetItem(stu_list[self.student[i]]['rate']))
+        self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
+        self.detail_name.setText(self.student[self.stu_num])
+        self.detail_role.setText(stu_list[self.student[self.stu_num]]['role'])
+        self.detail_role_explain.setText(role_list[stu_list[self.student[self.stu_num]]['role']])
+        self.detail_rate.setText(str(stu_list[self.student[self.stu_num]]['rate']))
         
-        self.tableGroup.setLayout(self.table_layout)
-        self.table_layout.addWidget(self.table)
+
+        
+    #---------------------inits-----------------------
+    def setting_init(self):
+        setting_layout = QHBoxLayout(self)
+        setting_button = QPushButton('test',self)
+        self.setting_box.setLayout(setting_layout)
+        setting_layout.addWidget(setting_button)
+
+    def table_init(self):
+        table_layout = QVBoxLayout(self)
+        self.table = QTableWidget(len(stu_list),3,self)
+
+        self.tableGroup.setLayout(table_layout)
+        table_layout.addWidget(self.table)
 
     def comment_init(self):
-        self.comment_layer = QVBoxLayout(self)
+        comment_layer = QVBoxLayout(self)
         self.comment_line = QTextEdit()
-        self.comment_line.setText(stu_list[self.student[self.stu_num]]['comment'])
-        self.comment_box.setLayout(self.comment_layer)
-        self.comment_layer.addWidget(self.comment_line)
+        
+        self.comment_box.setLayout(comment_layer)
+        comment_layer.addWidget(self.comment_line)
     
     def detail_init(self):
-        self.detail_layout = QFormLayout(self)
+        detail_layout = QFormLayout(self)
         
         #name line
         self.detail_name = QPushButton(self)
         self.detail_name.setMaximumWidth(90)
         
         menu = QMenu(self)
+
         for i in range(len(self.student)):
             act = QAction(self.student[i],self)
             act.setData(i)
@@ -136,31 +148,30 @@ class gui(QWidget):
             menu.addAction(act)
 
         self.detail_name.setMenu(menu)
-        self.detail_name.setText(self.student[self.stu_num])
         
-        d_button_menu = self.detail_name.menu()
-        button_list = d_button_menu.actions()
-        
-        #nameline
+        #nameline--------
 
         #role line
         self.detail_role = QLabel(self)
-        self.detail_role.setText(stu_list[self.student[self.stu_num]]['role'])
         
         self.detail_role_explain = QLabel(self)
-        self.detail_role_explain.setText(role_list[stu_list[self.student[self.stu_num]]['role']])
         #roleline
 
-        self.length_text = QLabel(text=str(self.comment_length))
-        self.byte_text = QLabel(text=str(self.comment_byte))
+        #rate line
+        self.detail_rate = QTextEdit(self)
+        self.detail_rate.setFixedSize(30,30)
+        #non-editalbe text line
+        length_text = QLabel(text=str(self.comment_length))
+        byte_text = QLabel(text=str(self.comment_byte))
 
-        self.detail_layout.addRow("이름:",self.detail_name)
-        self.detail_layout.addRow("역할:",self.detail_role)
-        self.detail_layout.addRow("역할 설명:",self.detail_role_explain)
-        self.detail_layout.addRow("글자수:",self.length_text)
-        self.detail_layout.addRow("바이트 수:",self.byte_text)
-       
-        self.detail_box.setLayout(self.detail_layout)
+        detail_layout.addRow("이름:",self.detail_name)
+        detail_layout.addRow("역할:",self.detail_role)
+        detail_layout.addRow("역할 설명:",self.detail_role_explain)
+        detail_layout.addRow("평점",self.detail_rate)
+        detail_layout.addRow("글자수:",length_text)
+        detail_layout.addRow("바이트 수:",byte_text)
+               
+        self.detail_box.setLayout(detail_layout)
        
 
 
@@ -173,7 +184,8 @@ class main():
 
         app = QApplication([])
         app.setApplicationDisplayName("main")
-        widget = gui()
+        self.widget = gui()
+        widget = self.widget
         widget.resize(width,height)        
         widget.show()
         
