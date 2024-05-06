@@ -6,24 +6,28 @@ from os import path,mkdir
 import sys
 import json
 
-stu_list:dict #자료 구조: {이름, 역할, 코멘트},{...}
+stu_list:dict #자료 구조: 이름:{역할, 코멘트},{...}
 role_list:dict #자료구조: {역할, 역할,...}
+release_hash = ""
+
 
 width,height = 1600,900
 
 
-#TODO: CVS 파일 임포트, UI 개발, 역할 수정, 추가 칸, 수정후 파일에 저장.
+#TODO: CVS 파일 임포트, UI 개발(ui 디자이너 사용), 역할 수정, 추가 칸, 학생 추가 및 수정 모드,테이블 변경시 자료 변경
 
 class check_load_file():
     def __init__(self) -> None:
         global stu_list
         global role_list
+        global release_hash
 
         self.check_file()
         with open("data\\data.json",'r',encoding='utf-8') as f:
             raw = json.loads(f.read())
-            stu_list = raw["student"][0]
-            role_list = raw["role"][0]
+            stu_list = raw["student"]
+            role_list = raw["role"]
+            release_hash = raw['release_hash']
 
 
 
@@ -37,9 +41,10 @@ class check_load_file():
                 pass
 
 class stu_directory():
-    def make_preset(self,stu:str,role:str,comment:str,rate:float):
-        global stu_list
-        stu_list[stu] = {"role":role, "comment":comment, "rate":rate}
+    def make_json_preset(self):
+        global stu_list,role_list,release_hash
+        return {"student":stu_list, "role":role_list, "release_hash":release_hash}
+
     
     def shuffel(self) -> None:
         global stu_list
@@ -56,6 +61,8 @@ class gui(QWidget):
     student = []
     comment_byte=0
     comment_length=0
+    cell_row = 0
+    cell_column = 0
     
     def __init__(self):
         super().__init__()
@@ -71,7 +78,7 @@ class gui(QWidget):
         self.tableGroup = QGroupBox("학생 리스트",self)
         self.tableGroup.setMinimumSize(QSize(width/2,height/2.5))
 
-        self.setting_box = QGroupBox("설정",self)
+        self.setting_box = QGroupBox("학생 추가",self)
         self.detail_box = QGroupBox("세부사항",self)
         self.comment_box = QGroupBox(self)
 
@@ -89,14 +96,40 @@ class gui(QWidget):
         self.detail_init()
         self.setting_init()
         self.update_text()
-
-    #@Slot()
+    
+    #--------------slots----------------
+    @Slot()
     def stu_select_event(self):
         action:QAction = self.sender()
         self.stu_num = action.data()
         #이닛을 부른다 해도 택스트 업데이트 X
         self.update_text()
+    
+    @Slot()
+    def comment_text_changed(self):
+        sender = self.sender()
+        stu_list[self.student[self.stu_num]]['comment'] = sender.toPlainText()
+    
+    @Slot()
+    def rate_text_changed(self):
+        sender = self.sender()
+        stu_list[self.student[self.stu_num]]['rate'] = sender.toPlainText()
 
+    @Slot()
+    def cell_select(self,row,column):
+        sender = self.sender()
+        self.cell_row = row
+        self.cell_column = column
+    
+    @Slot()
+    def cell_remove(self):
+        self.table.removeRow(self.cell_row)
+
+    @Slot()
+    def delete_cell(self):
+        self.table.removeRow(self.cell_row)
+    #------------------------------------
+        
     def update_text(self):
         for i in range(len(stu_list)):
             self.table.setItem(i,0,QTableWidgetItem(stu_list[self.student[i]]['role']))
@@ -114,13 +147,17 @@ class gui(QWidget):
     #---------------------inits-----------------------
     def setting_init(self):
         setting_layout = QHBoxLayout(self)
-        setting_button = QPushButton('test',self)
+        add_stu_button = QPushButton('추가',self)
+        del_selected_row_button = QPushButton('선택된 열 삭제',self)
+
+        setting_layout.addWidget(add_stu_button)
+        setting_layout.addWidget(del_selected_row_button)
         self.setting_box.setLayout(setting_layout)
-        setting_layout.addWidget(setting_button)
 
     def table_init(self):
         table_layout = QVBoxLayout(self)
         self.table = QTableWidget(len(stu_list),3,self)
+        self.table.cellClicked.connect(self.cell_select)
 
         self.tableGroup.setLayout(table_layout)
         table_layout.addWidget(self.table)
@@ -128,6 +165,8 @@ class gui(QWidget):
     def comment_init(self):
         comment_layer = QVBoxLayout(self)
         self.comment_line = QTextEdit()
+        
+        self.comment_line.textChanged.connect(self.comment_text_changed)
         
         self.comment_box.setLayout(comment_layer)
         comment_layer.addWidget(self.comment_line)
@@ -153,13 +192,13 @@ class gui(QWidget):
 
         #role line
         self.detail_role = QLabel(self)
-        
         self.detail_role_explain = QLabel(self)
-        #roleline
 
         #rate line
         self.detail_rate = QTextEdit(self)
         self.detail_rate.setFixedSize(30,30)
+        self.detail_rate.textChanged.connect(self.rate_text_changed)
+        
         #non-editalbe text line
         length_text = QLabel(text=str(self.comment_length))
         byte_text = QLabel(text=str(self.comment_byte))
@@ -188,6 +227,10 @@ class main():
         widget = self.widget
         widget.resize(width,height)        
         widget.show()
-        
-        sys.exit(app.exec())
+        app.exec()
+        temp:dict
+        #save_part
+        with open('data\\data.json','w+',encoding='utf8') as f:
+            json.dump(stu_directory().make_json_preset(),f,ensure_ascii=False)
+        sys.exit(0)
 main()

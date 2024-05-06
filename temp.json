@@ -1,0 +1,23 @@
+{
+    "student": 
+    {
+        "백지원": {
+            "role":"temp",
+            "comment": "대충 뭐시깽이.... 아 코드 짜기 귀찮아....",
+            "rate": 4
+        },
+        "아무개": {
+            "role":"temp2",
+            "comment": "대충 무언가",
+            "rate": 5
+        }
+    },
+    
+    "role":
+    {
+        "temp":"text",
+        "temp2":"text2"
+    },
+    
+    "release_hash":""
+}
