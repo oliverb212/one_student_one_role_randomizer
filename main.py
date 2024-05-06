@@ -6,6 +6,7 @@ from os import path,mkdir
 import sys
 import json
 
+
 stu_list:dict #자료 구조: 이름:{역할, 코멘트},{...}
 role_list:dict #자료구조: {역할, 역할,...}
 release_hash = ""
@@ -14,7 +15,7 @@ release_hash = ""
 width,height = 1600,900
 
 
-#TODO: CVS 파일 임포트, UI 개발(ui 디자이너 사용), 역할 수정, 추가 칸, 학생 추가 및 수정 모드,테이블 변경시 자료 변경
+#TODO: CVS 파일 임포트 익스포트, UI 개발(ui 디자이너 사용), 테이블 수정 및 추가 기능,릴리즈 해시로 업데이트 확인,테이블 수정시 데이터 리스트 수정 
 
 class check_load_file():
     def __init__(self) -> None:
@@ -45,16 +46,6 @@ class stu_directory():
         global stu_list,role_list,release_hash
         return {"student":stu_list, "role":role_list, "release_hash":release_hash}
 
-    
-    def shuffel(self) -> None:
-        global stu_list
-        import time
-        import random
-        random.seed((time.process_time_ns()*136%255+7)<<2)
-        students = gui().student
-        random.shuffle(students)
-        for i in range(len(students)):
-            stu_list[gui().student[i]]['role'] = stu_list[students]['role']
         
 class gui(QWidget):
     stu_num = 0
@@ -104,16 +95,33 @@ class gui(QWidget):
         self.stu_num = action.data()
         #이닛을 부른다 해도 택스트 업데이트 X
         self.update_text()
+
+    @Slot()
+    def randomize_stu(self):
+        global stu_list
+        import random
+        import time
+        role = []
+        random.seed(time.process_time_ns()*time.time_ns())
+        for i in range(len(self.student)): #학생의 리스트 구해오고, 섞기
+            role.append(stu_list[self.student[i]]['role'])
+        random.shuffle(role)
+        for i in range(len(self.student)): #섞은 리스트를 다시 원래 리스트에 붙여넣는 작업
+            stu_list[self.student[i]]['role'] = role[i]
+        self.update_text()
+
     
     @Slot()
     def comment_text_changed(self):
         sender = self.sender()
         stu_list[self.student[self.stu_num]]['comment'] = sender.toPlainText()
+        self.comment_text_byte_len()
     
     @Slot()
     def rate_text_changed(self):
         sender = self.sender()
         stu_list[self.student[self.stu_num]]['rate'] = sender.toPlainText()
+        
 
     @Slot()
     def cell_select(self,row,column):
@@ -122,12 +130,13 @@ class gui(QWidget):
         self.cell_column = column
     
     @Slot()
-    def cell_remove(self):
-        self.table.removeRow(self.cell_row)
-
-    @Slot()
     def delete_cell(self):
         self.table.removeRow(self.cell_row)
+    
+    @Slot()
+    def test(self):
+        sender:QTableWidget = self.sender()
+        print(sender.currentItem().text())
     #------------------------------------
         
     def update_text(self):
@@ -141,23 +150,37 @@ class gui(QWidget):
         self.detail_role.setText(stu_list[self.student[self.stu_num]]['role'])
         self.detail_role_explain.setText(role_list[stu_list[self.student[self.stu_num]]['role']])
         self.detail_rate.setText(str(stu_list[self.student[self.stu_num]]['rate']))
-        
-
+        self.length_text.setText(str(self.comment_length))
+        self.byte_text.setText(str(self.comment_byte))
+    
+    def comment_text_byte_len(self):
+        sender = self.sender()
+        self.comment_byte = len(sender.toPlainText().encode('utf-8'))
+        self.comment_length = str(len(sender.toPlainText()))
+        self.length_text.setText(str(self.comment_length))
+        self.byte_text.setText(str(self.comment_byte))
         
     #---------------------inits-----------------------
     def setting_init(self):
+        setting_grid = QGridLayout
+
         setting_layout = QHBoxLayout(self)
         add_stu_button = QPushButton('추가',self)
         del_selected_row_button = QPushButton('선택된 열 삭제',self)
+        del_selected_row_button.pressed.connect(self.delete_cell)
+        randomize_role_button = QPushButton("역할 랜덤 부여",self)
+        randomize_role_button.pressed.connect(self.randomize_stu)
 
         setting_layout.addWidget(add_stu_button)
         setting_layout.addWidget(del_selected_row_button)
+        setting_layout.addWidget(randomize_role_button)
         self.setting_box.setLayout(setting_layout)
 
     def table_init(self):
         table_layout = QVBoxLayout(self)
         self.table = QTableWidget(len(stu_list),3,self)
         self.table.cellClicked.connect(self.cell_select)
+        self.table.itemSelectionChanged.connect(self.test)
 
         self.tableGroup.setLayout(table_layout)
         table_layout.addWidget(self.table)
@@ -167,7 +190,6 @@ class gui(QWidget):
         self.comment_line = QTextEdit()
         
         self.comment_line.textChanged.connect(self.comment_text_changed)
-        
         self.comment_box.setLayout(comment_layer)
         comment_layer.addWidget(self.comment_line)
     
@@ -200,15 +222,15 @@ class gui(QWidget):
         self.detail_rate.textChanged.connect(self.rate_text_changed)
         
         #non-editalbe text line
-        length_text = QLabel(text=str(self.comment_length))
-        byte_text = QLabel(text=str(self.comment_byte))
+        self.length_text = QLabel(text=str(self.comment_length))
+        self.byte_text = QLabel(text=str(self.comment_byte))
 
         detail_layout.addRow("이름:",self.detail_name)
         detail_layout.addRow("역할:",self.detail_role)
         detail_layout.addRow("역할 설명:",self.detail_role_explain)
         detail_layout.addRow("평점",self.detail_rate)
-        detail_layout.addRow("글자수:",length_text)
-        detail_layout.addRow("바이트 수:",byte_text)
+        detail_layout.addRow("글자수:",self.length_text)
+        detail_layout.addRow("바이트 수:",self.byte_text)
                
         self.detail_box.setLayout(detail_layout)
        
