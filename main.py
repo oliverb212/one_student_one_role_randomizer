@@ -15,7 +15,7 @@ release_hash = ""
 width,height = 1600,1000
 
 
-#TODO: CVS 파일 임포트 익스포트, 테이블 수정 및 추가 기능(급함!!!!),릴리즈 해시로 업데이트 확인
+#TODO: CVS 파일 임포트 익스포트, 테이블 수정 및 추가 기능이랑 역할 추가 및 삭제(급함!!!!),릴리즈 해시로 업데이트 확인
 
 class check_load_file():
     def __init__(self) -> None:
@@ -31,9 +31,11 @@ class check_load_file():
                 role_list = raw["role"]
                 release_hash = raw['release_hash']
         except:
-            with open("data\\data.json",'w',encoding='utf-8') as f:
+            with open("data\\data.json",'w+',encoding='utf-8') as f:
                 temp = {"student": {"예시": {"role": "예시", "comment": "예시", "rate": "5"}}, "role": {"예시":"예시입니다."}, "release_hash": ""}
                 json.dump(temp,f,ensure_ascii=False)
+                f.flush()
+                raw = json.loads(f.read())
                 stu_list = raw["student"]
                 role_list = raw["role"]
                 release_hash = raw['release_hash']
@@ -41,6 +43,7 @@ class check_load_file():
     def check_file(self): #data 안에 학생, 역할, 코멘트, 평점 다 있음, 정규화 필요
         if path.isdir('data') == False:
             mkdir('data')
+
 
         if path.isfile('data\data.json') == False:
             with open("data\data.json", 'w') as f:
@@ -113,7 +116,7 @@ class gui(QWidget):
     def stu_select_event(self):
         action:QAction = self.sender()
         self.stu_num = action.data()
-        #이닛을 부른다 해도 택스트 업데이트 X
+
         self.update_all()
 
     @Slot()
@@ -148,11 +151,15 @@ class gui(QWidget):
         sender = self.sender()
         self.cell_row = row
         self.cell_column = column
+        self.stu_num = row
+        self.update_all()
     
     @Slot()
     def delete_cell(self):
         item_name = self.table.item(self.cell_row,1).text()
         del stu_list[item_name]
+        if self.stu_num >= 0: self.stu_num -= 1
+        else: pass
     
         self.table.removeRow(self.cell_row)
         self.update_all()
@@ -171,14 +178,19 @@ class gui(QWidget):
 
         stu_list[input_stu] = preset
 
+        self.preset_name.setText("")
+        self.preset_rate.setText("")
+
         self.update_all()
 
     @Slot()
     def update_table(self):
-        for i in range(len(self.student)):
+        stu_num = len(self.student)
+        for i in range(stu_num):
             self.table.setItem(i,0,QTableWidgetItem(stu_list[self.student[i]]['role']))
             self.table.setItem(i,1,QTableWidgetItem(self.student[i]))
             self.table.setItem(i,2,QTableWidgetItem(stu_list[self.student[i]]['comment']))
+        self.table.view
         self.table.horizontalHeader().setSectionResizeMode(2,QHeaderView.ResizeMode.Stretch)
     
     @Slot()
@@ -255,6 +267,7 @@ class gui(QWidget):
     def table_init(self):
         table_layout = QVBoxLayout(self)
         self.table = QTableWidget(len(stu_list),3,self)
+
         self.table.cellClicked.connect(self.cell_select)
         self.table.itemSelectionChanged.connect(self.update_table)
 
