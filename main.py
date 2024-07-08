@@ -49,8 +49,13 @@ class check_load_file():
         if path.isfile('data\data.json') == False:
             with open("data\data.json", 'w') as f:
                 pass
+class save_data():
+    def __init__(self) -> None:
+        #save_part
+        with open('data\\data.json','w+',encoding='utf8') as f:
+            json.dump(stu_directory().make_json_preset(),f,ensure_ascii=False)
 
-class load_csv():
+class load_csv(): #자료구조: 이름,역할,학생 코멘트,점수, 역할 설명
     def __init__(self,path) -> None:
         import csv
         try:
@@ -86,18 +91,33 @@ class load_csv():
         
         except Exception as e:
             errmsg = QErrorMessage()
-            errmsg.showMessage("에러, 파일이 손상되었거나, 코드의 버그입니다. 예외 로그:{}".format(e))
+            errmsg.showMessage("에러, 파일이 손상되었거나, 코드의 버그입니다. 예외 로그:{}: {}".format(type(e).__name__,e))
             errmsg.exec()
 
 class export_csv():
-    def __init__(self) -> None:
+    def __init__(self,path) -> None:
         import csv
-        raw = None
-        with open(".\\data\\data.json",'r',encoding='utf-8') as f:
-            raw = json.loads(f.read())
+        save_data()
+        try:
+            raw = None
+            data = []
+            with open(".\\data\\data.json",'r',encoding='utf-8') as f:
+                raw = json.loads(f.read())
 
-        with open(path,'w',encoding='utf-8') as f:
-            pass
+            export_stu = raw["student"]
+            stu_keys = list(export_stu.keys())
+            export_role = raw["role"]
+
+            for i in range(len(stu_keys)):
+                data.append([stu_keys[i], export_stu[stu_keys[i]]["role"], export_stu[stu_keys[i]]["comment"], export_stu[stu_keys[i]]["rate"], export_role[export_stu[stu_keys[i]]["role"]] ])
+
+            with open(path,'w+',encoding='utf-8',newline="\n") as f:
+                writer = csv.writer(f)
+                writer.writerows(data)
+        except Exception as e:
+            msg = QErrorMessage()
+            msg.showMessage("에러, 예외 로그: {}: {}".format(type(e).__name__,e))
+            msg.exec()
 
 
 
@@ -225,6 +245,7 @@ class main_gui(QWidget):
         info_maker.triggered.connect(self.call_maker_window)
         menubar_add_role.triggered.connect(self.call_role_window)
         file_load.triggered.connect(self.call_load_window)
+        file_export.triggered.connect(self.call_export_window)
         
         menubar.addMenu(menubar_file)
         menubar.addAction(menubar_add_role)
@@ -267,11 +288,18 @@ class main_gui(QWidget):
     @Slot()
     def call_load_window(self):
         dbox = QFileDialog(self)
-        dbox.setNameFilter("*.CSV")
-        fpath = dbox.getOpenFileName(self,filter="*.CSV")
-        if fpath[0] != "":
-            load_csv(fpath[0])
+        fpath = dbox.getOpenFileName(self,filter="*.csv")[0]
+        if fpath != "":
+            load_csv(fpath)
             self.update_all()
+    
+    @Slot()
+    def call_export_window(self):
+        dbox = QFileDialog(self)
+        fpath = dbox.getSaveFileName(self,filter="*.csv")[0]
+        if fpath != "":
+            export_csv(fpath)
+    
     @Slot()
     def call_role_window(self):
         if self.role_window == None:
@@ -521,11 +549,9 @@ class main():
         app.setApplicationDisplayName("main")
         self.widget = main_gui()
         widget = self.widget
-        widget.resize(width,height)        
+        widget.resize(width,height)
         widget.show()
         app.exec()
-        #save_part
-        with open('data\\data.json','w+',encoding='utf8') as f:
-            json.dump(stu_directory().make_json_preset(),f,ensure_ascii=False)
+        save_data()
         sys.exit(0)
 main()
