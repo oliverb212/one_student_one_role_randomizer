@@ -265,8 +265,8 @@ class main_gui(QWidget):
         self.detail_box = QGroupBox("세부사항",self)
         self.comment_box = QGroupBox("코멘트(쓰이는 즉시 자동저장)",self)
 
-        self.setting_box.setMinimumSize(width/2,height/5)
-        self.detail_box.setMinimumSize(width/2,height/5)
+        self.setting_box.setMinimumSize(width/2,height/4)
+        self.detail_box.setMinimumSize(width/2,height/4)
 
         self.table_group.setMinimumSize(width/2,height-self.setting_box.size().height())
         self.comment_box.setMinimumSize(width/2,height-self.setting_box.size().height())
@@ -523,7 +523,7 @@ class main_gui(QWidget):
 
         #rate line
         self.detail_rate = QTextEdit(self)
-        self.detail_rate.setFixedSize(30,30)
+        self.detail_rate.setMaximumSize(30,40)
         self.detail_rate.textChanged.connect(self.rate_text_changed)
         
         #non-editalbe text line
