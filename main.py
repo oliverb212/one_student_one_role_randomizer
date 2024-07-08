@@ -15,7 +15,7 @@ stu_list:dict #자료 구조: 이름:{역할, 코멘트},{...}
 role_list:dict #자료구조: {역할, 역할,...}
 
 
-width,height = screeninfo.get_monitors()[0].width/2, screeninfo.get_monitors()[0].height/2
+height,width = int(screeninfo.get_monitors()[0].height/1.5), int(screeninfo.get_monitors()[0].width/1.5)
 
 class check_load_file():
     def __init__(self) -> None:
@@ -256,6 +256,7 @@ class main_gui(QWidget):
         self.student = list(stu_list.keys())
     
         grid = QGridLayout(self)
+        grid.setRowStretch(0,height)
         grid.setMenuBar(menubar)
         self.setLayout(grid)
 
@@ -264,18 +265,20 @@ class main_gui(QWidget):
         self.detail_box = QGroupBox("세부사항",self)
         self.comment_box = QGroupBox("코멘트(쓰이는 즉시 자동저장)",self)
 
-        self.table_group.setMinimumSize(width/2,height/2)
-        self.setting_box.setMinimumSize(width/2,height/4)
-        self.detail_box.setMinimumSize(width/2,height/4)
-        self.comment_box.setMinimumSize(width/2,height/2)
-        
+        self.setting_box.setMinimumSize(width/2,height/5)
+        self.detail_box.setMinimumSize(width/2,height/5)
 
+        self.table_group.setMinimumSize(width/2,height-self.setting_box.size().height())
+        self.comment_box.setMinimumSize(width/2,height-self.setting_box.size().height())
+
+        self.table_group.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
+        self.comment_box.setSizePolicy(QSizePolicy.Policy.Expanding,QSizePolicy.Policy.Expanding)
         
         #그리드에 그룹박스 위젯 추가    
-        grid.addWidget(self.table_group,0,0,Qt.AlignmentFlag.AlignTop)
-        grid.addWidget(self.detail_box,1,1,Qt.AlignmentFlag.AlignTop)
-        grid.addWidget(self.setting_box,1,0,Qt.AlignmentFlag.AlignTop)
-        grid.addWidget(self.comment_box,0,1,Qt.AlignmentFlag.AlignTop)
+        grid.addWidget(self.table_group,0,0)
+        grid.addWidget(self.detail_box,1,1)
+        grid.addWidget(self.setting_box,1,0)
+        grid.addWidget(self.comment_box,0,1)
         
         self.table_init()
         self.comment_init()
