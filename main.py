@@ -6,6 +6,7 @@ from os import path,mkdir
 
 import sys
 import json
+import screeninfo
 
 from PySide6.QtWidgets import QWidget
 
@@ -14,7 +15,7 @@ stu_list:dict #자료 구조: 이름:{역할, 코멘트},{...}
 role_list:dict #자료구조: {역할, 역할,...}
 
 
-width,height = 1600,1000
+width,height = screeninfo.get_monitors()[0].width/2, screeninfo.get_monitors()[0].height/2
 
 class check_load_file():
     def __init__(self) -> None:
@@ -263,10 +264,10 @@ class main_gui(QWidget):
         self.detail_box = QGroupBox("세부사항",self)
         self.comment_box = QGroupBox("코멘트(쓰이는 즉시 자동저장)",self)
 
-        self.table_group.setMinimumSize(width/2,800)
-        self.setting_box.setMinimumSize(width/2,200)
-        self.detail_box.setMinimumSize(width/2,200)
-        self.comment_box.setMinimumSize(width/2,800)
+        self.table_group.setMinimumSize(width/2,height/2)
+        self.setting_box.setMinimumSize(width/2,height/4)
+        self.detail_box.setMinimumSize(width/2,height/4)
+        self.comment_box.setMinimumSize(width/2,height/2)
         
 
         
