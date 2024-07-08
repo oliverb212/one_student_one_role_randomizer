@@ -16,8 +16,6 @@ role_list:dict #자료구조: {역할, 역할,...}
 
 width,height = 1600,1000
 
-
-#TODO: CVS 파일 임포트 익스포트(이부분은 파일 path 가저오고 프로그램 재로드하는 방식으로)
 class check_load_file():
     def __init__(self) -> None:
         global stu_list
@@ -114,6 +112,7 @@ class export_csv():
             with open(path,'w+',encoding='utf-8',newline="\n") as f:
                 writer = csv.writer(f)
                 writer.writerows(data)
+            print("done!")
         except Exception as e:
             msg = QErrorMessage()
             msg.showMessage("에러, 예외 로그: {}: {}".format(type(e).__name__,e))
@@ -535,8 +534,6 @@ class main_gui(QWidget):
         detail_layout.addRow("바이트 수:",self.byte_text)
                
         self.detail_box.setLayout(detail_layout)
-       
-
 
 
 
@@ -546,7 +543,7 @@ class main():
         check_load_file()
 
         app = QApplication([])
-        app.setApplicationDisplayName("main")
+        app.setApplicationDisplayName("1인1역 기록장")
         self.widget = main_gui()
         widget = self.widget
         widget.resize(width,height)
