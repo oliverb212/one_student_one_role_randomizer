@@ -87,6 +87,36 @@ class load_csv(): #자료구조: 이름,역할,학생 코멘트,점수, 역할 �
                 json.dump(data,f,ensure_ascii=False)
             
             check_load_file()
+        except UnicodeDecodeError:
+            data = {"student":{},"role":{}}
+
+            with open(path,"r",encoding="utf-8") as f:
+                reader = csv.reader(f)
+
+                stu_name = []
+                stu_role = []
+                stu_rate = []
+                stu_comment =[]
+                role_comment = []
+                data_temp = {}
+
+                for line in reader:
+                    stu_name.append(line[0])
+                    stu_role.append(line[1])
+                    stu_comment.append(line[2])
+                    stu_rate.append(line[3])
+                    role_comment.append(line[4])
+
+                for i in range(len(stu_name)):
+                    data["student"][stu_name[i]] = {"role":stu_role[i],"comment":stu_comment[i],"rate":stu_rate[i]}              
+                    data_temp[stu_role[i]] = role_comment[i]
+
+                data["role"] = data_temp
+            
+            with open(".\\data\\data.json",'w',encoding='utf-8') as f:
+                json.dump(data,f,ensure_ascii=False)
+            
+            check_load_file()
         
         except Exception as e:
             errmsg = QErrorMessage()
